@@ -345,14 +345,8 @@ contract ExchangeOnSecondary {
                 return (current_price, buying_price);
                 // break;
             } else {
-                buying_price +=
-                    number_of_ask_token_on_price[_company_address][
-                        current_price
-                    ] *
-                    current_price;
-                number_of_token -= number_of_ask_token_on_price[
-                    _company_address
-                ][current_price];
+                buying_price += number_of_ask_token_on_price[_company_address][current_price] * current_price;
+                number_of_token -= number_of_ask_token_on_price[_company_address][current_price];
 
                 if (current_price == highest_asking_price[_company_address]) {
                     return (0, 0);
@@ -364,6 +358,8 @@ contract ExchangeOnSecondary {
         return (0, 0);
     }
 }
+
+
 
 contract TokenTypeA1FixedPriceExchangeContract {
     uint256 companyId;
@@ -396,47 +392,16 @@ contract TokenTypeA1FixedPriceExchangeContract {
         uint256 maximumAmountOfTokenOneCanBuy
     );
 
-    function AddCompany(
-        address payable _companyAddress,
-        string memory _companyCode,
-        string memory _name,
-        uint256 _tokens,
-        uint256 _companySecretKey,
-        uint256 _perTokenPrice,
-        uint256 _maximumAmountOfTokenOneCanBuy
-    ) external {
-        require(msg.sender == _companyAddress, "Authentication Failed !!");
-        require(
-            isCompany[_companyAddress] == false,
-            "Company already exist .."
-        );
-        require(
-            companySecretKey == _companySecretKey,
-            "Secret Key is not matched .."
-        );
 
-        companies.push(
-            companiesStruct(
-                companyId,
-                _companyAddress,
-                _companyCode,
-                _name,
-                _tokens,
-                _perTokenPrice,
-                _maximumAmountOfTokenOneCanBuy
-            )
-        );
+    function AddCompany(address payable _companyAddress, string memory _companyCode, string memory _name, uint256 _tokens, uint256 _companySecretKey, uint256 _perTokenPrice, uint256 _maximumAmountOfTokenOneCanBuy) external {
+        require(msg.sender == _companyAddress, "Authentication Failed !!");
+        require(isCompany[_companyAddress] == false, "Company already exist ..");
+        require(companySecretKey == _companySecretKey, "Secret Key is not matched ..");
+
+        companies.push(companiesStruct(companyId, _companyAddress, _companyCode, _name, _tokens, _perTokenPrice, _maximumAmountOfTokenOneCanBuy));
         isCompany[_companyAddress] = true;
         companyId += 1;
-        emit companiesEvent(
-            companyId,
-            _companyAddress,
-            _companyCode,
-            _name,
-            _tokens,
-            _perTokenPrice,
-            _maximumAmountOfTokenOneCanBuy
-        );
+        emit companiesEvent(companyId, _companyAddress, _companyCode, _name, _tokens,_perTokenPrice,_maximumAmountOfTokenOneCanBuy);
     }
 
     function GetAllCompany() external view returns (companiesStruct[] memory) {
@@ -446,32 +411,20 @@ contract TokenTypeA1FixedPriceExchangeContract {
     // List of companies Investor
     mapping(address => address[]) companyAllInvestorAddress;
 
-    function GetCompanyAllInvestorLength(address _companyAddress)
-        external
-        view
-        returns (uint256)
-    {
+    function GetCompanyAllInvestorLength(address _companyAddress) external view returns (uint256) {
         require(msg.sender == _companyAddress, "Authentication Failed !!");
         require(isCompany[_companyAddress] == true, "Company is not exist ..");
         return companyAllInvestorAddress[_companyAddress].length;
     }
 
-    function GetCompanyAllInvestor(address _companyAddress, uint256 _id)
-        external
-        view
-        returns (investorTokenInfoStruct memory)
-    {
+    function GetCompanyAllInvestor(address _companyAddress, uint256 _id) external view returns (investorTokenInfoStruct memory) {
         require(msg.sender == _companyAddress, "Authentication Failed !!");
         require(isCompany[_companyAddress] == true, "Company is not exist ..");
-        return
-            investorTokenInfo[companyAllInvestorAddress[_companyAddress][_id]][
-                _companyAddress
-            ];
+        return investorTokenInfo[companyAllInvestorAddress[_companyAddress][_id]][_companyAddress];
     }
 
     //Investor Center
-    mapping(address => mapping(address => investorTokenInfoStruct))
-        public investorTokenInfo;
+    mapping(address => mapping(address => investorTokenInfoStruct)) public investorTokenInfo;
     mapping(address => address[]) investorCurrentCompaniesList;
     mapping(address => mapping(address => bool)) public isInvestorAlreadyListed; // isInvestorAlreadyListed[_investorAddress][_companyAddress];
 
@@ -483,6 +436,7 @@ contract TokenTypeA1FixedPriceExchangeContract {
         string companyName;
         string companyCode;
     }
+
     event investorTokenInfoEvent(
         address investorAddress,
         address companyAddress,
@@ -492,208 +446,86 @@ contract TokenTypeA1FixedPriceExchangeContract {
         string companyCode
     );
 
-    function retrieveInvestorToken(
-        address _companyAddress,
-        address _investorAddress
-    ) external view returns (uint256 numberOfTokenPurchased) {
-        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[
-            _investorAddress
-        ][_companyAddress];
+
+    function retrieveInvestorToken(address _companyAddress, address _investorAddress ) external view returns (uint256 numberOfTokenPurchased) {
+        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[_investorAddress][_companyAddress];
         return (getInvestorData.numberOfTokenPurchased);
     }
 
-    function addTokenInPortfolio(
-        address _companyAddress,
-        address _investorAddress,
-        uint256 numOfTokenAdded
-    ) external {
-        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[
-            _investorAddress
-        ][_companyAddress];
+    function addTokenInPortfolio(address _companyAddress, address _investorAddress,uint256 numOfTokenAdded) external {
+        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[_investorAddress][_companyAddress];
         getInvestorData.numberOfTokenPurchased += numOfTokenAdded;
     }
 
-    function removeTokenFromPortfolio(
-        address _companyAddress,
-        address _investorAddress,
-        uint256 numOfTokenRemove
-    ) external {
-        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[
-            _investorAddress
-        ][_companyAddress];
+    function removeTokenFromPortfolio(address _companyAddress, address _investorAddress, uint256 numOfTokenRemove) external {
+        investorTokenInfoStruct storage getInvestorData = investorTokenInfo[_investorAddress][_companyAddress];
         getInvestorData.numberOfTokenPurchased -= numOfTokenRemove;
     }
 
-    function isInvestor(address _companyAddress, address _investorAddress)
-        external
-        view
-        returns (bool)
-    {
+    function isInvestor(address _companyAddress, address _investorAddress) external view returns (bool) {
         return isInvestorAlreadyListed[_investorAddress][_companyAddress];
     }
 
-    function addInvestor(
-        address _companyAddress,
-        address _investorAddress,
-        uint256 _companyId,
-        uint256 _token,
-        string memory _companyName,
-        string memory _companyCode
-    ) external {
-        investorTokenInfo[_investorAddress][
-            _companyAddress
-        ] = investorTokenInfoStruct(
-            _investorAddress,
-            _companyAddress,
-            _companyId,
-            _token,
-            _companyName,
-            _companyCode
-        );
+    function addInvestor(address _companyAddress, address _investorAddress, uint256 _companyId, uint256 _token, string memory _companyName, string memory _companyCode) external {
+        investorTokenInfo[_investorAddress][_companyAddress] = investorTokenInfoStruct(_investorAddress, _companyAddress, _companyId, _token,_companyName, _companyCode);
         investorCurrentCompaniesList[_investorAddress].push(_companyAddress);
 
         isInvestorAlreadyListed[_investorAddress][_companyAddress] = true;
         companyAllInvestorAddress[_companyAddress].push(_investorAddress);
-        emit investorTokenInfoEvent(
-            _investorAddress,
-            _companyAddress,
-            _companyId,
-            _token,
-            _companyName,
-            _companyCode
-        );
+        emit investorTokenInfoEvent(_investorAddress, _companyAddress, _companyId, _token, _companyName, _companyCode);
     }
 
-    function InvestorPurchasedTokens(
-        address payable _investorAddress,
-        address payable _companyAddress,
-        uint256 _companyId,
-        uint256 _numberOfTokenPurchased,
-        string memory _companyName,
-        string memory _companyCode
-    ) external {
+    function InvestorPurchasedTokens(address payable _investorAddress, address payable _companyAddress, uint256 _companyId, uint256 _numberOfTokenPurchased, string memory _companyName,string memory _companyCode) external {
         // require(msg.sender == _investorAddress, "Authentication Failed !!");
         companiesStruct storage getCompanyData = companies[_companyId];
-        require(
-            _numberOfTokenPurchased <=
-                getCompanyData.maximumAmountOfTokenOneCanBuy,
-            "You can not purchased a lot of Tokens"
-        );
-        require(
-            _numberOfTokenPurchased <= getCompanyData.tokens,
-            "Available token is not valid."
-        );
+        require(_numberOfTokenPurchased <= getCompanyData.maximumAmountOfTokenOneCanBuy, "You can not purchased a lot of Tokens");
+        require(_numberOfTokenPurchased <= getCompanyData.tokens, "Available token is not valid.");
 
         getCompanyData.tokens = getCompanyData.tokens - _numberOfTokenPurchased;
 
-        if (
-            isInvestorAlreadyListed[_investorAddress][_companyAddress] == false
-        ) {
-            investorTokenInfo[_investorAddress][
-                _companyAddress
-            ] = investorTokenInfoStruct(
-                _investorAddress,
-                _companyAddress,
-                _companyId,
-                _numberOfTokenPurchased,
-                _companyName,
-                _companyCode
-            );
-            investorCurrentCompaniesList[_investorAddress].push(
-                _companyAddress
-            );
+        if (isInvestorAlreadyListed[_investorAddress][_companyAddress] == false) {
+            investorTokenInfo[_investorAddress][_companyAddress] = investorTokenInfoStruct(_investorAddress, _companyAddress, _companyId, _numberOfTokenPurchased, _companyName, _companyCode);
+            investorCurrentCompaniesList[_investorAddress].push(_companyAddress);
 
             isInvestorAlreadyListed[_investorAddress][_companyAddress] = true;
             companyAllInvestorAddress[_companyAddress].push(_investorAddress);
-            emit investorTokenInfoEvent(
-                _investorAddress,
-                _companyAddress,
-                _companyId,
-                _numberOfTokenPurchased,
-                _companyName,
-                _companyCode
-            );
+            emit investorTokenInfoEvent(_investorAddress, _companyAddress, _companyId, _numberOfTokenPurchased, _companyName, _companyCode);
         } else {
-            investorTokenInfoStruct storage getInvestorData = investorTokenInfo[
-                _investorAddress
-            ][_companyAddress];
-            getInvestorData.numberOfTokenPurchased =
-                getInvestorData.numberOfTokenPurchased +
-                _numberOfTokenPurchased;
+            investorTokenInfoStruct storage getInvestorData = investorTokenInfo[_investorAddress][_companyAddress];
+            getInvestorData.numberOfTokenPurchased = getInvestorData.numberOfTokenPurchased + _numberOfTokenPurchased;
         }
     }
 
-    function GetInvestorCompaniesLength(address _investorAddress)
-        external
-        view
-        returns (uint256)
-    {
+    function GetInvestorCompaniesLength(address _investorAddress) external view returns (uint256){
         // require(msg.sender == _investorAddress, "Authentication Failed !!");
         return investorCurrentCompaniesList[_investorAddress].length;
     }
 
-    function GetInvestorCompany(address _investorAddress, uint256 _id)
-        external
-        view
-        returns (investorTokenInfoStruct memory)
-    {
+    function GetInvestorCompany(address _investorAddress, uint256 _id) external view returns (investorTokenInfoStruct memory){
         // require(msg.sender == _investorAddress, "Authentication Failed !!");
-        address _companyAddress = investorCurrentCompaniesList[
-            _investorAddress
-        ][_id];
+        address _companyAddress = investorCurrentCompaniesList[_investorAddress][_id];
         return investorTokenInfo[_investorAddress][_companyAddress];
     }
 
+
     // Exchange Token
-    function ExchangeTokens(
-        address payable _fromInvestor,
-        address payable _toInvestor,
-        address payable _companyAddress,
-        uint256 _numberOfTokenExchange
-    ) external {
+    function ExchangeTokens(address payable _fromInvestor, address payable _toInvestor, address payable _companyAddress, uint256 _numberOfTokenExchange ) external {
         require(msg.sender == _fromInvestor, "Authentication Failed !!");
 
-        investorTokenInfoStruct
-            storage getSenderInvestorData = investorTokenInfo[_fromInvestor][
-                _companyAddress
-            ];
-        require(
-            getSenderInvestorData.numberOfTokenPurchased >=
-                _numberOfTokenExchange,
-            "Number of Exchange token is not valid."
-        );
+        investorTokenInfoStruct storage getSenderInvestorData = investorTokenInfo[_fromInvestor][_companyAddress];
+        require(getSenderInvestorData.numberOfTokenPurchased >= _numberOfTokenExchange, "Number of Exchange token is not valid.");
         getSenderInvestorData.numberOfTokenPurchased -= _numberOfTokenExchange;
 
         if (isInvestorAlreadyListed[_toInvestor][_companyAddress] == false) {
-            investorTokenInfo[_toInvestor][
-                _companyAddress
-            ] = investorTokenInfoStruct(
-                _toInvestor,
-                _companyAddress,
-                getSenderInvestorData.companyId,
-                _numberOfTokenExchange,
-                getSenderInvestorData.companyName,
-                getSenderInvestorData.companyCode
-            );
+            investorTokenInfo[_toInvestor][_companyAddress] = investorTokenInfoStruct(_toInvestor, _companyAddress, getSenderInvestorData.companyId, _numberOfTokenExchange,getSenderInvestorData.companyName, getSenderInvestorData.companyCode);
             investorCurrentCompaniesList[_toInvestor].push(_companyAddress);
             isInvestorAlreadyListed[_toInvestor][_companyAddress] = true;
 
             companyAllInvestorAddress[_companyAddress].push(_toInvestor);
-            emit investorTokenInfoEvent(
-                _toInvestor,
-                _companyAddress,
-                getSenderInvestorData.companyId,
-                _numberOfTokenExchange,
-                getSenderInvestorData.companyName,
-                getSenderInvestorData.companyCode
-            );
+            emit investorTokenInfoEvent(_toInvestor, _companyAddress, getSenderInvestorData.companyId, _numberOfTokenExchange, getSenderInvestorData.companyName, getSenderInvestorData.companyCode);
         } else {
-            investorTokenInfoStruct
-                storage getReceivedInvestorData = investorTokenInfo[
-                    _toInvestor
-                ][_companyAddress];
-            getReceivedInvestorData
-                .numberOfTokenPurchased += _numberOfTokenExchange;
+            investorTokenInfoStruct storage getReceivedInvestorData = investorTokenInfo[_toInvestor][_companyAddress];
+            getReceivedInvestorData.numberOfTokenPurchased += _numberOfTokenExchange;
         }
     }
 }
